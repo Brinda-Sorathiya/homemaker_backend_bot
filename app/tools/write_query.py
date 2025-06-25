@@ -1,5 +1,3 @@
-# app/tools/write_query.py
-
 from app.config.db import get_conn, get_table_info
 from app.config.gemini import llm
 from app.agent.prompts import query_prompt_template
@@ -7,10 +5,8 @@ from app.agent.types import State, QueryOutput
 
 async def generate_sql(state: State) -> State:
     try:
-        # Load table schema
         table_info = await get_table_info()
 
-        # Format the prompt
         prompt = query_prompt_template.format_messages(
             dialect="PostgreSQL",
             top_k=10,
@@ -18,16 +14,14 @@ async def generate_sql(state: State) -> State:
             input=state["question"]
         )
 
-        # Generate SQL query with Gemini
         structured_llm = llm.with_structured_output(QueryOutput)
         response = structured_llm.invoke(prompt) 
         query = response['query'].strip()
-
+        print(query)
         return {**state, "query": query}
 
     except Exception as e:
         print(f"ERROR in generate_sql: {str(e)}") 
-        # Consider logging the full traceback here for better debugging
         import traceback
         traceback.print_exc()
         return {**state, "query": f"-- Error generating SQL: {str(e)}"}
@@ -49,10 +43,10 @@ async def generate_answer(state: State) -> State:
     if "query" in state and state["query"].startswith("-- Error"):
         return {**state, "answer": f"❌ SQL Error: {state['query']}"}
 
-    # Prompt template
     prompt = (
         "Given the following user question, corresponding SQL query, "
         "and SQL result, answer the user question clearly and concisely.\n\n"
+        "note :- Whenever you returning property id or apn as an answer of query since apn and property id is ininformative for the user you have to return property title and its owner name"
         f"Question: {state['question']}\n"
         f"SQL Query: {state['query']}\n"
         f"SQL Result: {state['result']}\n\n"

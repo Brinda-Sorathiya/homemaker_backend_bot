@@ -8,7 +8,6 @@ load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
 pool = None
 
-# Configure logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 

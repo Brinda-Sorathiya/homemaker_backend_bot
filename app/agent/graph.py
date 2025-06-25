@@ -3,7 +3,6 @@ from langgraph.graph import StateGraph, END
 from app.tools.write_query import generate_sql, run_sql, generate_answer
 from .types import State
 
-# Each tool modifies and returns a state dictionary
 async def chat_agent(question: str) -> str:
 
     try:
