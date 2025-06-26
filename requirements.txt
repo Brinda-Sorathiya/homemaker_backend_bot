@@ -1,6 +1,7 @@
 fastapi
 uvicorn
 langchain
+langgraph
 langchain-community
 langchain-google-genai
 dotenv
