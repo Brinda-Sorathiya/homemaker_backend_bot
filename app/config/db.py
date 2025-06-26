@@ -1,14 +1,12 @@
 import os
 import asyncpg
-import asyncio
-import logging
 from dotenv import load_dotenv
+import logging
 
 load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 pool = None
-_db_lock = asyncio.Lock()  # prevent race condition in Vercel
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -17,35 +15,32 @@ async def connect_to_db():
     global pool
     try:
         if not DATABASE_URL:
-            raise ValueError("DATABASE_URL is not set in the environment.")
-        
+            raise ValueError("❌ DATABASE_URL is not set in the environment.")
+
         if pool is None:
             pool = await asyncpg.create_pool(DATABASE_URL)
-            logger.info("Connected to the PostgreSQL database.")
+            logger.info("✅ Connected to the PostgreSQL database.")
     except (asyncpg.PostgresError, ValueError) as e:
-        logger.error(f"Database connection failed: {e}")
+        logger.error(f"❌ Database connection failed: {e}")
         raise
     except Exception as e:
-        logger.exception("Unexpected error during DB connection:")
+        logger.exception("❌ Unexpected error during DB connection:")
         raise
-
-async def get_conn():
-    global pool
-    if pool is None:
-        async with _db_lock:
-            if pool is None:  # double check in case other coroutine already created it
-                logger.info("Lazy DB pool initialization triggered.")
-                await connect_to_db()
-    return pool
 
 async def close_db_connection():
     global pool
     try:
         if pool:
             await pool.close()
-            logger.info("PostgreSQL connection pool closed.")
+            logger.info("🛑 PostgreSQL connection pool closed.")
     except Exception as e:
-        logger.warning(f"Error while closing DB pool: {e}")
+        logger.warning(f"⚠️ Error while closing DB pool: {e}")
+
+async def get_conn():
+    global pool
+    if pool is None:
+        raise RuntimeError("🚫 DB pool not initialized. Call connect_to_db() first.")
+    return pool
 
 async def get_table_info() -> str:
     pool = await get_conn()
