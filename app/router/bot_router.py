@@ -3,6 +3,10 @@ from app.agent.graph import chat_agent
 
 router = APIRouter()
 
+@router.get("/chat")
+async def check():
+    return {"message": "Housing Real Estate AI Agent API"}
+
 @router.post("/chat")
 async def ai_qa_chat(request: Request):
     data = await request.json()
