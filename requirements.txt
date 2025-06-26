@@ -7,3 +7,5 @@ langchain-google-genai
 dotenv
 typing-extensions
 asyncpg
+asyncio
+logging
